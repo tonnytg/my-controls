@@ -1,0 +1,10 @@
+#IDE
+.idea
+
+# Logs
+*.log
+
+# keys
+*.key
+id_rsa
+id_rsa.pub
