@@ -2,6 +2,7 @@ package curl
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,8 +14,7 @@ func GetRequest(url string) ([]byte, error) {
 
 	token := os.Getenv("GCP_TOKEN")
 	if token == "" {
-		fmt.Println("invalid token, you need export GCP_TOKEN")
-		os.Exit(1)
+		return nil, errors.New("internalError: invalid token, export GCP_TOKEN")
 	}
 
 	bearer := "Bearer " + token
@@ -33,14 +33,15 @@ func GetRequest(url string) ([]byte, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-	}
-
-	r := regexp.MustCompile(`20([0-9])`)
-	if !r.Match([]byte(string(resp.StatusCode))) {
-		fmt.Println("statusCode:", resp.StatusCode)
+		errorMsg := fmt.Sprintf("too many redirects: %v", err)
+		return nil, errors.New(errorMsg)
 	}
 
 	data, _ := ioutil.ReadAll(resp.Body)
+	r := regexp.MustCompile(`20([0-9])`)
+	if !r.Match([]byte(string(resp.StatusCode))) {
+		errorMsg := fmt.Sprintf("expected status code 2XX, but received: %d.\n %v", resp.StatusCode, err)
+		return data, errors.New(errorMsg)
+	}
 	return data, nil
 }
