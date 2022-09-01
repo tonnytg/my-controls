@@ -40,7 +40,9 @@ func GetRequest(url string) ([]byte, error) {
 	data, _ := ioutil.ReadAll(resp.Body)
 	r := regexp.MustCompile(`20([0-9])`)
 	if !r.Match([]byte(string(resp.StatusCode))) {
-		errorMsg := fmt.Sprintf("expected status code 2XX, but received: %d.\n %v", resp.StatusCode, err)
+		errorMsg := fmt.Sprintf(
+			"expected status code 2XX, but received: %d.\n %v",
+			resp.StatusCode, err)
 		return data, errors.New(errorMsg)
 	}
 	return data, nil
